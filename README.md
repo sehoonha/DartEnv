@@ -21,8 +21,8 @@ To facilitate installation, we have uploaded the entire project base including t
 
 
     git clone https://github.com/VincentYu68/DartEnv.git
-	  cd gym
-	  pip install -e .
+    cd DartEnv
+    pip install -e .
 
 
 ###Example
