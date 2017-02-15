@@ -52,11 +52,6 @@ class DartEnv(gym.Env):
         self.frame_skip= frame_skip
         self.viewer = None
 
-        self.metadata = {
-            #'render.modes': ['human', 'rgb_array'],
-            #'video.frames_per_second' : int(np.round(1.0 / self.dt))
-        }
-
         observation, _reward, done, _info = self._step(np.zeros(len(action_bounds[0])))
         assert not done
         self.obs_dim = observation_size
@@ -130,18 +125,23 @@ class DartEnv(gym.Env):
             self._get_viewer().glwidget.updateGL()
             img = self._get_viewer().glwidget.grabFrameBuffer()
 
+            pixmap = QtGui.QPixmap(img)
+            pixmap2 = pixmap.scaled(128, 128, aspectRatioMode=1)
+
+            img = pixmap2.toImage()
+
             height = img.height()
             width = img.width()
 
-            data = np.zeros((height, width, 3))
-            print data.shape
+            data = np.zeros((height, width, 3), dtype=np.uint8)
+
             for i in xrange(width):
                 for j in xrange(height):
                     color = QtGui.QColor(img.pixel(i, j))
                     rgbval = color.getRgb()
-                    data[j][i][0] = rgbval[0]
-                    data[j][i][1] = rgbval[1]
-                    data[j][i][2] = rgbval[2]
+                    data[j][i][0] = np.uint8(rgbval[0])
+                    data[j][i][1] = np.uint8(rgbval[1])
+                    data[j][i][2] = np.uint8(rgbval[2])
 
             return data
         elif mode == 'human':
