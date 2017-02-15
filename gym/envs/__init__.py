@@ -189,12 +189,14 @@ register(
     id='DartHopper-v1',
     entry_point='gym.envs.dart:DartHopperEnv',
     reward_threshold=3800.0,
+    timestep_limit=1000,
 )
 
 register(
     id='DartCartPole-v1',
     entry_point='gym.envs.dart:DartCartPoleEnv',
     reward_threshold=950.0,
+    timestep_limit=1000,
 )
 
 
