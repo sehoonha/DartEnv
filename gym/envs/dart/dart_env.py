@@ -126,7 +126,7 @@ class DartEnv(gym.Env):
             img = self._get_viewer().glwidget.grabFrameBuffer()
 
             pixmap = QtGui.QPixmap(img)
-            pixmap2 = pixmap.scaled(128, 128, aspectRatioMode=1)
+            pixmap2 = pixmap.scaled(128, 128)
 
             img = pixmap2.toImage()
 
