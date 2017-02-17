@@ -7,24 +7,21 @@ from os import path
 import gym
 import six
 
-from PyQt4 import QtGui
+
+from gym.envs.dart.static_window import *
 
 try:
     import pydart2 as pydart
-    from pydart2.gui.viewer import *
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you need to install pydart2.)".format(e))
 
-class PydartStaticWindow(PydartWindow):
-    def run_application(self,):
-        self.show()
 
 def getViewer(sim, title=None, default_camera=None):
     # glutInit(sys.argv)
-    win = PydartStaticWindow(sim, title)
+    win = StaticGLUTWindow(sim, title)
     if default_camera is not None:
-        win.camera_event(default_camera)
-    win.run_application()
+        win.scene.set_camera(default_camera)
+    win.run()
     return win
 
 class DartEnv(gym.Env):
@@ -45,7 +42,7 @@ class DartEnv(gym.Env):
         self.dart_world = pydart.World(dt, fullpath)
         self.robot_skeleton = self.dart_world.skeletons[-1] # assume that the skeleton of interest is always the last one
 
-        for jt in xrange(0, len(self.robot_skeleton.joints)):
+        for jt in range(0, len(self.robot_skeleton.joints)):
             if self.robot_skeleton.joints[jt].has_position_limit(0):
                 self.robot_skeleton.joints[jt].set_position_limit_enforced(True)
 
@@ -122,32 +119,10 @@ class DartEnv(gym.Env):
             return
 
         if mode == 'rgb_array':
-            self._get_viewer().glwidget.updateGL()
-            img = self._get_viewer().glwidget.grabFrameBuffer()
-
-
-
-            pixmap = QtGui.QPixmap(img)
-            pixmap2 = pixmap.scaled(128, 128)
-
-            img = pixmap2.toImage()
-
-            height = img.height()
-            width = img.width()
-
-            data = np.zeros((height, width, 3), dtype=np.uint8)
-
-            for i in xrange(width):
-                for j in xrange(height):
-                    color = QtGui.QColor(img.pixel(i, j))
-                    rgbval = color.getRgb()
-                    data[j][i][0] = np.uint8(rgbval[0])
-                    data[j][i][1] = np.uint8(rgbval[1])
-                    data[j][i][2] = np.uint8(rgbval[2])
-
+            data = self._get_viewer().getFrame()
             return data
         elif mode == 'human':
-            self._get_viewer().glwidget.updateGL()
+            self._get_viewer().runSingleStep()
 
     def _get_viewer(self):
         if self.viewer is None:

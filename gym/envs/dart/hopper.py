@@ -11,7 +11,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
 
     def _step(self, a):
         clamped_control = np.array(a)
-        for i in xrange(len(clamped_control)):
+        for i in range(len(clamped_control)):
             if clamped_control[i] > self.control_bounds[0][i]:
                 clamped_control[i] = self.control_bounds[0][i]
             if clamped_control[i] < self.control_bounds[1][i]:
