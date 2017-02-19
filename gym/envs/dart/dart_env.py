@@ -49,6 +49,8 @@ class DartEnv(gym.Env):
 
         self.action_space = spaces.Box(action_bounds[1], action_bounds[0])
 
+        self.track_skeleton_id = -1 # track the last skeleton's com by default
+
 
         high = np.inf*np.ones(self.obs_dim)
         low = -high
@@ -105,7 +107,7 @@ class DartEnv(gym.Env):
             self.dart_world.step()
 
     def _render(self, mode='human', close=False):
-        self._get_viewer().scene.tb.trans[0] = -self.robot_skeleton.com()[0]*1
+        self._get_viewer().scene.tb.trans[0] = -self.dart_world.skeletons[self.track_skeleton_id].com()[0]*1
         if close:
             if self.viewer is not None:
                 self._get_viewer().close()
