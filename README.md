@@ -3,9 +3,7 @@ Openai Gym with Dart support
 
 ###About
 
-**DartEnv** is an implementation of the <a href="https://github.com/openai/gym">**openai gym**</a> environment.
-
-It is currently still under development.
+**DartEnv** provides 3D multi-body simulation environments based on the <a href="https://github.com/openai/gym">**openai gym**</a> environment. The physics simulation is carried out by <a href="http://dartsim.github.io/">Dart</a> and <a href="http://pydart2.readthedocs.io/en/latest/">PyDart2</a>, which is a python binding for Dart.
 
 ###Requirements
 
