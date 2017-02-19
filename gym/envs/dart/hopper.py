@@ -25,13 +25,13 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
         self.action_scale = 200
-        self.train_UP = True
+        self.train_UP = False
         obs_dim = 11
         if self.train_UP:
             obs_dim += 1
+        self.param_manager = hopperContactManager(self)
         dart_env.DartEnv.__init__(self, 'hopper.skel', 4, obs_dim, self.control_bounds)
         utils.EzPickle.__init__(self)
-        self.param_manager = hopperContactManager(self)
 
     def _step(self, a):
         clamped_control = np.array(a)
