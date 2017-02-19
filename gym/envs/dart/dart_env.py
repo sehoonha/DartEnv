@@ -12,17 +12,10 @@ from gym.envs.dart.static_window import *
 
 try:
     import pydart2 as pydart
+    from pydart2.gui.trackball import Trackball
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you need to install pydart2.)".format(e))
 
-
-def getViewer(sim, title=None, default_camera=None):
-    # glutInit(sys.argv)
-    win = StaticGLUTWindow(sim, title)
-    if default_camera is not None:
-        win.scene.set_camera(default_camera)
-    win.run()
-    return win
 
 class DartEnv(gym.Env):
     """Superclass for all Dart environments.
@@ -112,6 +105,7 @@ class DartEnv(gym.Env):
             self.dart_world.step()
 
     def _render(self, mode='human', close=False):
+        self._get_viewer().scene.tb.trans[0] = -self.robot_skeleton.com()[0]*1
         if close:
             if self.viewer is not None:
                 self._get_viewer().close()
@@ -124,11 +118,19 @@ class DartEnv(gym.Env):
         elif mode == 'human':
             self._get_viewer().runSingleStep()
 
+    def getViewer(self, sim, title=None):
+        # glutInit(sys.argv)
+        win = StaticGLUTWindow(sim, title)
+        win.scene.add_camera(Trackball(theta=-45.0, phi = 0.0, zoom=0.1), 'gym_camera')
+        win.scene.set_camera(win.scene.num_cameras()-1)
+        win.run()
+        return win
+
     def _get_viewer(self):
         if self.viewer is None:
-            self.viewer = getViewer(self.dart_world)
+            self.viewer = self.getViewer(self.dart_world)
+            self.viewer_setup()
         return self.viewer
-
 
     def state_vector(self):
         return np.concatenate([

@@ -2,12 +2,36 @@ import numpy as np
 from gym import utils
 from gym.envs.dart import dart_env
 
+class hopperContactManager:
+    def __init__(self, simulator):
+        self.simulator = simulator
+        self.range = [0.3, 1.0] # friction range
+
+    def get_simulator_parameters(self):
+        cur_friction = self.simulator.dart_world.skeletons[0].bodynodes[0].friction_coeff()
+        friction_param = (cur_friction - self.range[0]) / (self.range[1] - self.range[0])
+
+        return np.array([friction_param])
+
+    def set_simulator_parameters(self, x):
+        friction = x[0] * (self.range[1] - self.range[0]) + self.range[0]
+        self.simulator.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(friction)
+
+    def resample_parameters(self):
+        x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        self.set_simulator_parameters(x)
+
 class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
         self.action_scale = 200
-        dart_env.DartEnv.__init__(self, 'hopper.skel', 4, 11, self.control_bounds)
+        self.train_UP = True
+        obs_dim = 11
+        if self.train_UP:
+            obs_dim += 1
+        dart_env.DartEnv.__init__(self, 'hopper.skel', 4, obs_dim, self.control_bounds)
         utils.EzPickle.__init__(self)
+        self.param_manager = hopperContactManager(self)
 
     def _step(self, a):
         clamped_control = np.array(a)
@@ -46,6 +70,10 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
             np.clip(self.robot_skeleton.dq,-10,10)
         ])
         state[0] = self.robot_skeleton.bodynodes[2].com()[1]
+
+        if self.train_UP:
+            state = np.concatenate([state, self.param_manager.get_simulator_parameters()])
+
         return state
 
     def reset_model(self):
@@ -53,7 +81,11 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         qpos = self.robot_skeleton.q + self.np_random.uniform(low=-.005, high=.005, size=self.robot_skeleton.ndofs)
         qvel = self.robot_skeleton.dq + self.np_random.uniform(low=-.005, high=.005, size=self.robot_skeleton.ndofs)
         self.set_state(qpos, qvel)
+
+        if self.train_UP:
+            self.param_manager.resample_parameters()
+
         return self._get_obs()
 
     def viewer_setup(self):
-        pass
+        self._get_viewer().scene.tb.trans[2] = -5.5
