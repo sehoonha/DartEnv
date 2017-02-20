@@ -29,8 +29,10 @@ After installation, you can run DartEnv using the same API as openai gym. One ex
 
     import gym
     env = gym.make('DartHopper-v1')
-    env.reset()
-    env.render()
+    observation = env.reset()
+    for i in range(100):
+        observation, reward, done, envinfo = env.step(env.action_space.sample())
+        env.render()
 
 ###Learning with <a href="https://github.com/openai/rllab">RLLAB</a> (As of Feb 19th, 2017)
 
