@@ -41,7 +41,7 @@ class hopperContactMassManager:
         self.simulator.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(friction)
 
         mass = x[1] * (self.torso_mass_range[1] - self.torso_mass_range[0]) + self.torso_mass_range[0]
-        self.simulator.robot_skeleton.bodynodes[2].setMass(mass)
+        self.simulator.robot_skeleton.bodynodes[2].m = mass
 
     def resample_parameters(self):
         x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
