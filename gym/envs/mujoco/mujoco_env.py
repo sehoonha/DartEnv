@@ -47,6 +47,7 @@ class MujocoEnv(gym.Env):
         high = bounds[:, 1]
         self.action_space = spaces.Box(low, high)
 
+        self.act_dim = len(low)
 
         high = np.inf*np.ones(self.obs_dim)
         low = -high
