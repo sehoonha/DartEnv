@@ -21,6 +21,32 @@ class hopperContactManager:
         x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
         self.set_simulator_parameters(x)
 
+class hopperContactMassManager:
+    def __init__(self, simulator):
+        self.simulator = simulator
+        self.range = [0.3, 1.0] # friction range
+        self.torso_mass_range = [3.0, 9.0]
+
+    def get_simulator_parameters(self):
+        cur_friction = self.simulator.dart_world.skeletons[0].bodynodes[0].friction_coeff()
+        friction_param = (cur_friction - self.range[0]) / (self.range[1] - self.range[0])
+
+        cur_mass = self.simulator.robot_skeleton.bodynodes[2].m
+        mass_param = (cur_mass - self.torso_mass_range[0]) / (self.torso_mass_range[1] - self.torso_mass_range[0])
+
+        return np.array([friction_param, mass_param])
+
+    def set_simulator_parameters(self, x):
+        friction = x[0] * (self.range[1] - self.range[0]) + self.range[0]
+        self.simulator.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(friction)
+
+        mass = x[1] * (self.torso_mass_range[1] - self.torso_mass_range[0]) + self.torso_mass_range[0]
+        self.simulator.robot_skeleton.bodynodes[2].setMass(mass)
+
+    def resample_parameters(self):
+        x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        self.set_simulator_parameters(x)
+
 class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
@@ -29,7 +55,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         obs_dim = 11
         if self.train_UP:
             obs_dim += 1
-        self.param_manager = hopperContactManager(self)
+        self.param_manager = hopperContactMassManager(self)
 
         # UPOSI variables
         self.use_UPOSI = False
