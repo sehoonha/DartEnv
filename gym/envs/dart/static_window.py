@@ -29,6 +29,17 @@ class StaticGLUTWindow(GLUTWindow):
         img = np.frombuffer(data, dtype=np.uint8)
         return img.reshape(self.window_size[1], self.window_size[0], 4)[::-1,:,0:3]
 
+    def mykeyboard(self, key, x, y):
+        keycode = ord(key)
+        key = key.decode('utf-8')
+        # print("key = [%s] = [%d]" % (key, ord(key)))
+
+        # n = sim.num_frames()
+        if keycode == 27:
+            self.close()
+            return
+        self.keyPressed(key, x, y)
+
     def run(self, ):
         # Init glut
         GLUT.glutInit(())
@@ -41,9 +52,8 @@ class StaticGLUTWindow(GLUTWindow):
         self.window = GLUT.glutCreateWindow(self.title)
 
         GLUT.glutDisplayFunc(self.drawGL)
-        GLUT.glutIdleFunc(self.idle)
         GLUT.glutReshapeFunc(self.resizeGL)
-        GLUT.glutKeyboardFunc(self.keyPressed)
+        GLUT.glutKeyboardFunc(self.mykeyboard)
         GLUT.glutMouseFunc(self.mouseFunc)
         GLUT.glutMotionFunc(self.motionFunc)
         self.initGL(*self.window_size)

@@ -38,4 +38,3 @@ class DartCartPoleEnv(dart_env.DartEnv, utils.EzPickle):
         self._get_viewer().scene.tb.trans[2] = -3.5
         self._get_viewer().scene.tb._set_theta(0)
         self.track_skeleton_id = 0
-        
