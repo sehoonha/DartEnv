@@ -23,6 +23,9 @@ To facilitate installation, we have uploaded the entire project base including t
     pip install -e .
 
 
+Please find the detailed installation instruction of using <a href="https://github.com/openai/rllab">Rllab</a> to learn DartEnv in the <a href="https://github.com/VincentYu68/DartEnv/wiki">wiki</a> page.
+
+
 ###Example
 
 After installation, you can run DartEnv using the same API as openai gym. One example of running the dart version of the Hopper model is shown below:
@@ -34,6 +37,3 @@ After installation, you can run DartEnv using the same API as openai gym. One ex
         observation, reward, done, envinfo = env.step(env.action_space.sample())
         env.render()
 
-###Learning with <a href="https://github.com/openai/rllab">RLLAB</a> (As of Feb 19th, 2017)
-
-Please find the installation instruction of using Rllab to learn DartEnv in the <a href="https://github.com/VincentYu68/DartEnv/wiki">wiki</a> page.
