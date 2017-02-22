@@ -36,4 +36,4 @@ After installation, you can run DartEnv using the same API as openai gym. One ex
 
 ###Learning with <a href="https://github.com/openai/rllab">RLLAB</a> (As of Feb 19th, 2017)
 
-Please find the installation instruction of using Rllab to learn DartEnv in the wiki page.
+Please find the installation instruction of using Rllab to learn DartEnv in the <a href="https://github.com/VincentYu68/DartEnv/wiki">wiki</a> page.
