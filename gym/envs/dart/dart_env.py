@@ -42,6 +42,12 @@ class DartEnv(gym.Env):
         self.frame_skip= frame_skip
         self.viewer = None
 
+        # random perturbation
+        self.add_perturbation = True
+        self.perturbation_parameters = [0.05, 20, 2] # probability, magnitude, bodyid, duration
+        self.perturbation_duration = 20
+        self.perturb_force = np.array([0, 0, 0])
+
         observation, _reward, done, _info = self._step(np.zeros(len(action_bounds[0])))
         assert not done
         self.obs_dim = observation_size
@@ -64,6 +70,8 @@ class DartEnv(gym.Env):
             'render.modes': ['human', 'rgb_array'],
             'video.frames_per_second' : int(np.round(1.0 / self.dt))
         }
+
+
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -102,7 +110,21 @@ class DartEnv(gym.Env):
         return self.dart_world.dt * self.frame_skip
 
     def do_simulation(self, tau, n_frames):
+        if self.add_perturbation:
+            if self.perturbation_duration == 0:
+                self.perturb_force *= 0
+                if np.random.random() < self.perturbation_parameters[0]:
+                    axis_rand = np.random.randint(0, 2, 1)[0]
+                    direction_rand = np.random.randint(0, 2, 1)[0] * 2 - 1
+                    self.perturb_force[axis_rand] = direction_rand * self.perturbation_parameters[1]
+                    print(self.perturb_force)
+            else:
+                self.perturbation_duration -= 1
+
         for _ in range(n_frames):
+            if self.add_perturbation:
+                self.robot_skeleton.bodynodes[self.perturbation_parameters[2]].add_ext_force(self.perturb_force)
+
             self.robot_skeleton.set_forces(tau)
             self.dart_world.step()
 
