@@ -119,7 +119,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         ob = self._get_obs()
  
 
-        return ob, reward, done, {'pre_state':pre_state, 'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty}
+        return ob, reward, done, {'pre_state':pre_state, 'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty, 'done':done}
 
     def _get_obs(self):
         state =  np.concatenate([
