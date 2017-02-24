@@ -26,7 +26,7 @@ class hopperContactMassManager:
     def __init__(self, simulator):
         self.simulator = simulator
         self.range = [0.3, 1.0] # friction range
-        self.torso_mass_range = [3.0, 9.0]
+        self.torso_mass_range = [3.0, 6.0]
         self.param_dim = 2
 
     def get_simulator_parameters(self):
@@ -76,6 +76,8 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         if self.use_UPOSI:
             self.state_action_buffer[-1].append(np.array(a))
 
+        pre_state = self.state_vector()
+
         clamped_control = np.array(a)
         for i in range(len(clamped_control)):
             if clamped_control[i] > self.control_bounds[0][i]:
@@ -112,8 +114,10 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         s = self.state_vector()
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
                     (height > .7) and (abs(ang) < .4))
+
+
         ob = self._get_obs()
-        return ob, reward, done, {'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty}
+        return ob, reward, done, {'pre_state':pre_state, 'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty}
 
     def _get_obs(self):
         state =  np.concatenate([
@@ -141,6 +145,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         if self.train_UP:
             state = np.concatenate([state, self.param_manager.get_simulator_parameters()])
 
+
         return state
 
     def reset_model(self):
@@ -151,6 +156,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
 
         if self.train_UP:
             self.param_manager.resample_parameters()
+
 
         self.state_action_buffer = [] # for UPOSI
 

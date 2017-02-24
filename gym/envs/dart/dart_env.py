@@ -43,7 +43,7 @@ class DartEnv(gym.Env):
         self.viewer = None
 
         # random perturbation
-        self.add_perturbation = True
+        self.add_perturbation = False
         self.perturbation_parameters = [0.05, 20, 2] # probability, magnitude, bodyid, duration
         self.perturbation_duration = 20
         self.perturb_force = np.array([0, 0, 0])
@@ -97,6 +97,7 @@ class DartEnv(gym.Env):
     # -----------------------------
 
     def _reset(self):
+        self.perturbation_duration = 0
         ob = self.reset_model()
         return ob
 
