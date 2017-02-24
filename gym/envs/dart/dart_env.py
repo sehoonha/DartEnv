@@ -44,8 +44,8 @@ class DartEnv(gym.Env):
 
         # random perturbation
         self.add_perturbation = True
-        self.perturbation_parameters = [0.05, 20, 2] # probability, magnitude, bodyid, duration
-        self.perturbation_duration = 20
+        self.perturbation_parameters = [0.05, 5, 2] # probability, magnitude, bodyid, duration
+        self.perturbation_duration = 40
         self.perturb_force = np.array([0, 0, 0])
 
         observation, _reward, done, _info = self._step(np.zeros(len(action_bounds[0])))
@@ -117,7 +117,7 @@ class DartEnv(gym.Env):
                     axis_rand = np.random.randint(0, 2, 1)[0]
                     direction_rand = np.random.randint(0, 2, 1)[0] * 2 - 1
                     self.perturb_force[axis_rand] = direction_rand * self.perturbation_parameters[1]
-                    print(self.perturb_force)
+
             else:
                 self.perturbation_duration -= 1
 

@@ -26,7 +26,7 @@ class hopperContactMassManager:
     def __init__(self, simulator):
         self.simulator = simulator
         self.range = [0.3, 1.0] # friction range
-        self.torso_mass_range = [3.0, 9.0]
+        self.torso_mass_range = [3.0, 6.0]
         self.param_dim = 2
 
     def get_simulator_parameters(self):
@@ -46,7 +46,8 @@ class hopperContactMassManager:
         self.simulator.robot_skeleton.bodynodes[2].set_mass(mass)
 
     def resample_parameters(self):
-        x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        #x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        x = np.random.normal(0, 0.2, 2) % 1
         self.set_simulator_parameters(x)
 
 class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
@@ -54,6 +55,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
         self.action_scale = 200
         self.train_UP = False
+        self.noisy_input = False
         obs_dim = 11
         self.param_manager = hopperContactMassManager(self)
         if self.train_UP:
@@ -61,7 +63,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
 
         # UPOSI variables
         self.use_UPOSI = False
-        self.history_length = 3 # size of the motion history for UPOSI
+        self.history_length = 5 # size of the motion history for UPOSI
         self.state_action_buffer = []
 
         dart_env.DartEnv.__init__(self, 'hopper.skel', 4, obs_dim, self.control_bounds)
@@ -75,6 +77,8 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
     def _step(self, a):
         if self.use_UPOSI:
             self.state_action_buffer[-1].append(np.array(a))
+
+        pre_state = self.state_vector()
 
         clamped_control = np.array(a)
         for i in range(len(clamped_control)):
@@ -111,9 +115,11 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
 
         s = self.state_vector()
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
-                    (height > .7) and (abs(ang) < .4))
+                    (height > .7) and (height < 1.8) and (abs(ang) < .4))
         ob = self._get_obs()
-        return ob, reward, done, {'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty}
+ 
+
+        return ob, reward, done, {'pre_state':pre_state, 'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'limit_pen':2e-2 * joint_limit_penalty}
 
     def _get_obs(self):
         state =  np.concatenate([
@@ -140,6 +146,9 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
 
         if self.train_UP:
             state = np.concatenate([state, self.param_manager.get_simulator_parameters()])
+
+        if self.noisy_input:
+            state = state + np.random.normal(0, .01, len(state))
 
         return state
 
