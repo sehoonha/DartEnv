@@ -13,6 +13,7 @@ from gym.envs.dart.static_window import *
 try:
     import pydart2 as pydart
     from pydart2.gui.trackball import Trackball
+    pydart.init()
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you need to install pydart2.)".format(e))
 
@@ -22,7 +23,6 @@ class DartEnv(gym.Env):
     """
 
     def __init__(self, model_path, frame_skip, observation_size, action_bounds, dt=0.002):
-        pydart.init()
         print('pydart initialization OK')
 
         if model_path.startswith("/"):
@@ -43,7 +43,7 @@ class DartEnv(gym.Env):
         self.viewer = None
 
         # random perturbation
-        self.add_perturbation = True
+        self.add_perturbation = False
         self.perturbation_parameters = [0.05, 5, 2] # probability, magnitude, bodyid, duration
         self.perturbation_duration = 40
         self.perturb_force = np.array([0, 0, 0])
