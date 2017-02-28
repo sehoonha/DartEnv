@@ -75,7 +75,6 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         self.OSI_obs_dim = (self.obs_dim+self.act_dim)*self.history_length+self.obs_dim
 
     def _step(self, a):
-        print('state-action', self.state_vector(), a, self.param_manager.get_simulator_parameters())
         if self.use_UPOSI:
             self.state_action_buffer[-1].append(np.array(a))
         pre_state = [self.state_vector()]
