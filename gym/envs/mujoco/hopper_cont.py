@@ -33,17 +33,18 @@ class HopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
         self.OSI_obs_dim = (self.obs_dim+self.act_dim)*self.history_length+self.obs_dim
         self.obs_dim = 2
         self.act_dim = 2
-        self.action_space = spaces.Box([0, 0], [1, 1])
+        self.action_space = spaces.Box(np.array([0, 0]), np.array([1, 1]))
+        self.observation_space = spaces.Box(np.array([-np.inf, -np.inf]), np.array([np.inf, np.inf]))
 
         utils.EzPickle.__init__(self)
 
     def _step(self, a):
-        if len(self.state_action_buffer)  == 0:
+        if not hasattr(self, 'OSI_obs_dim'):
             action = [0, 0, 0]
         else:
             cur_obs = np.hstack([self.state_action_buffer[-1][0], a])
             _, data = self.UP.get_action(cur_obs)
-            action = [data['mean']]
+            action = data['mean']
             self.state_action_buffer[-1].append(np.array(action))
 
         posbefore = self.model.data.qpos[0,0]
@@ -81,8 +82,9 @@ class HopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
         self.state_action_buffer.append([np.array(state)])
         if len(self.state_action_buffer) > self.history_length:
             self.state_action_buffer.pop(0)
+        pred_param = self.OSI_out([[out_ob], 0])[0]
 
-        return self.OSI_out([[out_ob], 0])
+        return pred_param
 
     def reset_model(self):
         qpos = self.init_qpos + self.np_random.uniform(low=-.005, high=.005, size=self.model.nq)
