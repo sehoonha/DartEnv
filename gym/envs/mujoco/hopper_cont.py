@@ -66,6 +66,9 @@ class HopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
             np.clip(self.model.data.qvel.flat,-10,10)
         ])
 
+        if not hasattr(self, 'OSI_obs_dim'):
+            return state
+
         out_ob = np.zeros(self.OSI_obs_dim)
         ind = 0
         for s_a in self.state_action_buffer:
