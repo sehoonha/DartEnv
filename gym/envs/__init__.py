@@ -237,6 +237,12 @@ register(
 )
 
 register(
+    id='HopperCont-v1',
+    entry_point='gym.envs.mujoco:HopperEnvCont',
+    reward_threshold=3800.0,
+)
+
+register(
     id='Swimmer-v1',
     entry_point='gym.envs.mujoco:SwimmerEnv',
     reward_threshold=360.0,
