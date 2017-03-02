@@ -38,12 +38,13 @@ class HopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
         utils.EzPickle.__init__(self)
 
     def _step(self, a):
-        cur_obs = np.hstack([self.state_action_buffer[-1][0], a])
-        action = self.UP.sample
-        _, data = self.UP.get_action(cur_obs)
-        action = [data['mean']]
-
-        self.state_action_buffer[-1].append(np.array(action))
+        if len(self.state_action_buffer)  == 0:
+            action = [0, 0, 0]
+        else:
+            cur_obs = np.hstack([self.state_action_buffer[-1][0], a])
+            _, data = self.UP.get_action(cur_obs)
+            action = [data['mean']]
+            self.state_action_buffer[-1].append(np.array(action))
 
         posbefore = self.model.data.qpos[0,0]
         self.do_simulation(action, self.frame_skip)
