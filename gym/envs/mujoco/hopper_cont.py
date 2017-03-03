@@ -16,7 +16,7 @@ import os
 import joblib
 
 # WARNING: A lot of hand-coded stuff for now
-class DartHopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
+class HopperEnvCont(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         # UPOSI variables
         self.use_OSI = False

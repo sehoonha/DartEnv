@@ -194,7 +194,7 @@ register(
 
 register(
     id='DartHopperCont-v1',
-    entry_point='gym.envs.mujoco:DartHopperEnvCont',
+    entry_point='gym.envs.dart:DartHopperEnvCont',
     reward_threshold=3800.0,
     timestep_limit=1000,
 )

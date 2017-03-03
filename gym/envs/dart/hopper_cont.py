@@ -16,7 +16,7 @@ import os
 import joblib
 
 # WARNING: A lot of hand-coded stuff for now
-class HopperEnvCont(dart_env.DartEnv, utils.EzPickle):
+class DartHopperEnvCont(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
         self.action_scale = 200
