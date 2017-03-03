@@ -101,17 +101,17 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
             total_force_mag += np.square(contact.force).sum()
 
         joint_limit_penalty = 0
-        for j in range(3, self.robot_skeleton.ndofs):
+        for j in [-2]:
             if (self.robot_skeleton.q_lower[j] - self.robot_skeleton.q[j]) > -0.05:
-                joint_limit_penalty += abs(1.0)
+                joint_limit_penalty += abs(1.5)
             if (self.robot_skeleton.q_upper[j] - self.robot_skeleton.q[j]) < 0.05:
-                joint_limit_penalty += abs(1.0)
+                joint_limit_penalty += abs(1.5)
 
         alive_bonus = 1.0
         reward = (posafter - posbefore) / self.dt
         reward += alive_bonus
         reward -= 1e-3 * np.square(a).sum()
-        #reward -= 2e-1 * joint_limit_penalty
+        reward -= 5e-1 * joint_limit_penalty
         #reward -= 1e-7 * total_force_mag
 
         s = self.state_vector()
