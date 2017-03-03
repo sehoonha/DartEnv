@@ -43,7 +43,6 @@ class DartHopperEnvCont(dart_env.DartEnv, utils.EzPickle):
             self.observation_space = spaces.Box(np.array([-np.inf, -np.inf]), np.array([np.inf, np.inf]))
         self.act_dim = 2
         self.action_space = spaces.Box(np.array([0, 0]), np.array([1, 1]))
-        self.observation_space = spaces.Box(np.array([-np.inf, -np.inf]), np.array([np.inf, np.inf]))
 
         utils.EzPickle.__init__(self)
 
