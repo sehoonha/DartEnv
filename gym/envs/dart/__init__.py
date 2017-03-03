@@ -3,4 +3,4 @@ from gym.envs.dart.dart_env import DartEnv
 # message if Dart is not installed correctly
 from gym.envs.dart.cart_pole import DartCartPoleEnv
 from gym.envs.dart.hopper import DartHopperEnv
-from gym.envs.dart.hopper_cont import HopperEnvCont
+from gym.envs.dart.hopper_cont import DartHopperEnvCont
