@@ -30,7 +30,7 @@ class HopperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward -= 1e-3 * np.square(a).sum()
         s = self.state_vector()
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
-                    (height > .7) and (height < 1.8) and (abs(ang) < .2))
+                    (height > .7) and (height < 1.8) and (abs(ang) < .4))
         ob = self._get_obs()
         return ob, reward, done, {'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum()}
 
