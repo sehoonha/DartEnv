@@ -50,6 +50,60 @@ class hopperContactMassManager:
         x = np.random.normal(0, 0.2, 2) % 1
         self.set_simulator_parameters(x)
 
+class hopperContactMassLimitManager:
+    def __init__(self, simulator):
+        self.simulator = simulator
+        self.range = [0.3, 1.0] # friction range
+        self.torso_mass_range = [3.0, 6.0]
+        self.limit_range = [-0.3, 0.3]
+        self.param_dim = 2+4
+        self.initial_up_limits = []
+        self.initial_low_limits = []
+        for i in range(3):
+            self.initial_up_limits.append(simulator.robot_skeleton.joints[-3+i].position_upper_limit(0))
+            self.initial_low_limits.append(simulator.robot_skeleton.joints[-3+i].position_lower_limit(0))
+
+    def get_simulator_parameters(self):
+        cur_friction = self.simulator.dart_world.skeletons[0].bodynodes[0].friction_coeff()
+        friction_param = (cur_friction - self.range[0]) / (self.range[1] - self.range[0])
+
+        cur_mass = self.simulator.robot_skeleton.bodynodes[2].m
+        mass_param = (cur_mass - self.torso_mass_range[0]) / (self.torso_mass_range[1] - self.torso_mass_range[0])
+
+        # use upper limit of
+        limit_diff1 = self.simulator.robot_skeleton.joints[-3].position_upper_limit(0)
+        limit_diff2 = self.simulator.robot_skeleton.joints[-2].position_upper_limit(0)
+        limit_diff3 = self.simulator.robot_skeleton.joints[-1].position_upper_limit(0)
+        limit_diff4 = self.simulator.robot_skeleton.joints[-1].position_lower_limit(0)
+        limit_diff1 = (limit_diff1 - self.limit_range[0]) / (self.limit_range[1] - self.limit_range[0])
+        limit_diff2 = (limit_diff2 - self.limit_range[0]) / (self.limit_range[1] - self.limit_range[0])
+        limit_diff3 = (limit_diff3 - self.limit_range[0]) / (self.limit_range[1] - self.limit_range[0])
+        limit_diff4 = (limit_diff4 - self.limit_range[0]) / (self.limit_range[1] - self.limit_range[0])
+
+        return np.array([friction_param, mass_param, limit_diff1, limit_diff2, limit_diff3, limit_diff4])
+
+    def set_simulator_parameters(self, x):
+        friction = x[0] * (self.range[1] - self.range[0]) + self.range[0]
+        self.simulator.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(friction)
+
+        mass = x[1] * (self.torso_mass_range[1] - self.torso_mass_range[0]) + self.torso_mass_range[0]
+        self.simulator.robot_skeleton.bodynodes[2].set_mass(mass)
+
+        limit_diff1 = x[2] * (self.limit_range[1] - self.limit_range[0]) + self.limit_range[0]
+        limit_diff2 = x[3] * (self.limit_range[1] - self.limit_range[0]) + self.limit_range[0]
+        limit_diff3 = x[4] * (self.limit_range[1] - self.limit_range[0]) + self.limit_range[0]
+        limit_diff4 = x[5] * (self.limit_range[1] - self.limit_range[0]) + self.limit_range[0]
+
+        self.simulator.robot_skeleton.joints[-3].set_position_upper_limit(0, limit_diff1)
+        self.simulator.robot_skeleton.joints[-2].set_position_upper_limit(0, limit_diff2)
+        self.simulator.robot_skeleton.joints[-1].set_position_upper_limit(0, limit_diff3)
+        self.simulator.robot_skeleton.joints[-1].set_position_lower_limit(0, limit_diff4)
+
+    def resample_parameters(self):
+        #x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        x = np.random.normal(0, 0.2, 2) % 1
+        self.set_simulator_parameters(x)
+
 class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
     def __init__(self):
         self.control_bounds = np.array([[1.0, 1.0, 1.0],[-1.0, -1.0, -1.0]])
