@@ -35,7 +35,7 @@ class DartHopperEnvCont(dart_env.DartEnv, utils.EzPickle):
             self.OSI = load_model(os.path.join(modelpath, 'OSI.h5'))
             self.OSI_out = K.function([self.OSI.input, K.learning_phase()], self.OSI.output)
 
-        dart_env.DartEnv.__init__(self, 'hopper.skel', 4, obs_dim, self.control_bounds)
+        dart_env.DartEnv.__init__(self, 'hopper_capsule.skel', 4, obs_dim, self.control_bounds)
 
         if self.use_OSI:
             self.OSI_obs_dim = (self.obs_dim+self.act_dim)*self.history_length+self.obs_dim
