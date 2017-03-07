@@ -22,6 +22,7 @@ class HumanoidEnv(mujoco_env.MujocoEnv, utils.EzPickle):
                                data.cfrc_ext.flat])
 
     def _step(self, a):
+        pre_state = [self.state_vector()]
         pos_before = mass_center(self.model)
         self.do_simulation(a, self.frame_skip)
         pos_after = mass_center(self.model)
@@ -34,7 +35,7 @@ class HumanoidEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         reward = lin_vel_cost - quad_ctrl_cost - quad_impact_cost + alive_bonus
         qpos = self.model.data.qpos
         done = bool((qpos[2] < 1.0) or (qpos[2] > 2.0))
-        return self._get_obs(), reward, done, dict(reward_linvel=lin_vel_cost, reward_quadctrl=-quad_ctrl_cost, reward_alive=alive_bonus, reward_impact=-quad_impact_cost)
+        return self._get_obs(), reward, done, dict(pre_state=pre_state, reward_linvel=lin_vel_cost, reward_quadctrl=-quad_ctrl_cost, reward_alive=alive_bonus, reward_impact=-quad_impact_cost, done_return=done)
 
     def reset_model(self):
         c = 0.01
