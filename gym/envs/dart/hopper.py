@@ -74,7 +74,8 @@ class hopperContactMassRoughnessManager:
 
     def set_simulator_parameters(self, x):
         friction = x[0] * (self.range[1] - self.range[0]) + self.range[0]
-        self.simulator.dart_world.skeletons[0].bodynodes[0].set_friction_coeff(friction)
+        for i in range(len(self.simulator.dart_world.skeletons[0].bodynodes)):
+            self.simulator.dart_world.skeletons[0].bodynodes[i].set_friction_coeff(friction)
 
         mass = x[1] * (self.torso_mass_range[1] - self.torso_mass_range[0]) + self.torso_mass_range[0]
         self.simulator.robot_skeleton.bodynodes[2].set_mass(mass)
@@ -90,8 +91,8 @@ class hopperContactMassRoughnessManager:
         self.simulator.dart_world.skeletons[0].q = cq
 
     def resample_parameters(self):
-        #x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
-        x = np.random.normal(0, 0.2, self.param_dim) % 1
+        x = np.random.uniform(-0.05, 1.05, len(self.get_simulator_parameters()))
+        #x = np.random.normal(0, 0.2, self.param_dim) % 1
         self.set_simulator_parameters(x)
 
         if len(self.simulator.dart_world.skeletons[0].bodynodes) >= 7:
@@ -103,6 +104,47 @@ class hopperContactMassRoughnessManager:
             cq[33] = np.random.random()-0.5
             cq[39] = np.random.random()-0.5
             self.simulator.dart_world.skeletons[0].q = cq
+
+class hopperRoughnessManager:
+    def __init__(self, simulator):
+        self.simulator = simulator
+        self.roughness_range = [-0.05, -0.02] # height of the obstacles
+        self.param_dim = 1
+
+
+    def get_simulator_parameters(self):
+        cq = self.simulator.dart_world.skeletons[0].q
+        cur_height = cq[10]
+        roughness_param = (cur_height - self.roughness_range[0]) / (self.roughness_range[1] - self.roughness_range[0])
+
+        return np.array([roughness_param])
+
+    def set_simulator_parameters(self, x):
+        obs_height = x[0] * (self.roughness_range[1] - self.roughness_range[0]) + self.roughness_range[0]
+        cq = self.simulator.dart_world.skeletons[0].q
+        cq[10] = obs_height
+        cq[16] = obs_height
+        cq[22] = obs_height
+        cq[28] = obs_height
+        cq[34] = obs_height
+        cq[40] = obs_height
+        self.simulator.dart_world.skeletons[0].q = cq
+
+    def resample_parameters(self):
+        x = np.random.uniform(-0.05, 1.05, len(self.get_simulator_parameters()))
+        #x = np.random.normal(0, 0.2, self.param_dim) % 1
+        self.set_simulator_parameters(x)
+
+        if len(self.simulator.dart_world.skeletons[0].bodynodes) >= 7:
+            cq = self.simulator.dart_world.skeletons[0].q
+            cq[9] = np.random.random()-0.5
+            cq[15] = np.random.random()-0.5
+            cq[21] = np.random.random()-0.5
+            cq[27] = np.random.random()-0.5
+            cq[33] = np.random.random()-0.5
+            cq[39] = np.random.random()-0.5
+            self.simulator.dart_world.skeletons[0].q = cq
+
 
 class hopperContactAllMassManager:
     def __init__(self, simulator):
@@ -238,8 +280,8 @@ class hopperContactMassAllLimitManager:
         self.simulator.robot_skeleton.joints[-1].set_position_lower_limit(0, limit_diff4)
 
     def resample_parameters(self):
-        #x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
-        x = np.random.normal(0, 0.2, 2) % 1
+        x = np.random.uniform(-0.05, 1.05, len(self.get_simulator_parameters()))
+        #x = np.random.normal(0, 0.2, 2) % 1
         self.set_simulator_parameters(x)
 
 class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
@@ -250,7 +292,7 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         self.noisy_input = False
         self.resample_MP = True  # whether to resample the model paraeters
         obs_dim = 11
-        self.param_manager = hopperContactMassRoughnessManager(self)
+        self.param_manager = hopperRoughnessManager(self)
         if self.train_UP:
             obs_dim += self.param_manager.param_dim
 
@@ -278,7 +320,6 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         pre_state = [self.state_vector()]
         if self.train_UP:
             pre_state.append(self.param_manager.get_simulator_parameters())
-
         clamped_control = np.array(a)
         for i in range(len(clamped_control)):
             if clamped_control[i] > self.control_bounds[0][i]:
@@ -287,7 +328,6 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
                 clamped_control[i] = self.control_bounds[1][i]
         tau = np.zeros(self.robot_skeleton.ndofs)
         tau[3:] = clamped_control * self.action_scale
-
         posbefore = self.robot_skeleton.q[0]
         self.do_simulation(tau, self.frame_skip)
         posafter,ang = self.robot_skeleton.q[0,2]
@@ -316,15 +356,17 @@ class DartHopperEnv(dart_env.DartEnv, utils.EzPickle):
         done = not (np.isfinite(s).all() and (np.abs(s[2:]) < 100).all() and
                     (height > .7) and (height < 1.8) and (abs(ang) < .4))
         ob = self._get_obs()
-
         if len(self.dart_world.skeletons[0].bodynodes) >= 7: # move obstacles with the hopper
             cq = self.dart_world.skeletons[0].q
-            cq[9] += posafter - posbefore
+            '''cq[9] += posafter - posbefore
             cq[15] += posafter - posbefore
             cq[21] += posafter - posbefore
             cq[27] += posafter - posbefore
             cq[33] += posafter - posbefore
-            cq[39] += posafter - posbefore
+            cq[39] += posafter - posbefore'''
+            for i in range(9, 40, 6):
+                if cq[i] < posafter - 0.75:
+                    cq[i] += 1
             self.dart_world.skeletons[0].q = cq
 
         return ob, reward, done, {'pre_state':pre_state, 'vel_rew':(posafter - posbefore) / self.dt, 'action_rew':1e-3 * np.square(a).sum(), 'forcemag':1e-7*total_force_mag, 'done_return':done}

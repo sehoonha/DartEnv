@@ -15,6 +15,31 @@ try:
 except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: you need to install mujoco_py, and also perform the setup instructions here: https://github.com/openai/mujoco-py/.)".format(e))
 
+class mjSoftnessManager:
+    def __init__(self, simulator):
+        self.simulator = simulator
+        self.imp_range = [0.5, 0.99] # sol_imp range
+        self.ref_range = [0.004, 0.04] # sol_ref range
+        self.param_dim = 1
+
+    def get_simulator_parameters(self):
+        cur_imp = self.simulator.model.geom_solimp[0]
+        param = (cur_imp - self.imp_range[0]) / (self.imp_range[1] - self.imp_range[0])
+
+        return np.array([param])
+
+    def set_simulator_parameters(self, x):
+        imp = x[0] * (self.imp_range[1] - self.imp_range[0]) + self.imp_range[0]
+        ref = x[0] * (self.ref_range[1] - self.ref_range[0]) + self.ref_range[0]
+        for i in range(self.simulator.model.nbody):
+            self.simulator.model.geom_solimp[i * 3] = imp
+            self.simulator.model.geom_solimp[i * 3+1] = imp
+            self.simulator.model.geom_solref[i * 2] = ref
+
+    def resample_parameters(self):
+        x = np.random.uniform(0, 1, len(self.get_simulator_parameters()))
+        self.set_simulator_parameters(x)
+
 class MujocoEnv(gym.Env):
     """Superclass for all MuJoCo environments.
     """
@@ -151,3 +176,4 @@ class MujocoEnv(gym.Env):
             self.model.data.qpos.flat,
             self.model.data.qvel.flat
         ])
+

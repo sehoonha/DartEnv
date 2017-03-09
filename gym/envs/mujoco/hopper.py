@@ -2,12 +2,16 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
+
+
 class HopperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
         # UPOSI variables
         self.use_UPOSI = False
         self.history_length = 3 # size of the motion history for UPOSI
         self.state_action_buffer = []
+
+        self.param_manager = mujoco_env.mjSoftnessManager(self)
 
         mujoco_env.MujocoEnv.__init__(self, 'hopper.xml', 4)
         utils.EzPickle.__init__(self)
@@ -70,3 +74,4 @@ class HopperEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.viewer.cam.distance = self.model.stat.extent * 0.75
         self.viewer.cam.lookat[2] += .8
         self.viewer.cam.elevation = -20
+
