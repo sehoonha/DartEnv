@@ -26,7 +26,7 @@ class DartEnv(gym.Env):
     def __init__(self, model_path, frame_skip, observation_size, action_bounds, dt=0.002):
         print('pydart initialization OK')
 
-        self.dart_world = self.create_world(model_path)
+        self.dart_world = self.create_world(dt, model_path)
         self.robot_skeleton = self.dart_world.skeletons[-1] # assume that the skeleton of interest is always the last one
 
         for jt in range(0, len(self.robot_skeleton.joints)):
@@ -67,7 +67,7 @@ class DartEnv(gym.Env):
             'video.frames_per_second' : int(np.round(1.0 / self.dt))
         }
 
-    def create_world(self, model_path):
+    def create_world(self, dt, model_path):
         if model_path.startswith("/"):
             fullpath = model_path
         else:
